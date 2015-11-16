@@ -40,7 +40,7 @@ with open("pfm_all.fixed.txt") as handle:
 #
 # convert to pssm, adding a pseudocount of 0.1 to each base.
 #
-    pssm = m.counts.normalize(pseudocounts=1).log_odds()
+    pssm = m.counts.normalize(pseudocounts=0.1).log_odds()
     cons_score = pssm.calculate(cons)
     cons_list = list(cons)
     cons_str =  str(cons)
