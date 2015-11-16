@@ -9,14 +9,14 @@ long_data[which(long_data$variable == "AG"),]$Tv = 0
 long_data[which(long_data$variable == "CT"),]$Tv = 0
 summary(data)
 summary(long_data)
-#full_model = lm(value ~ variable + name + pos, data=long_data)
+#full_model = lm(value ~ variable + name + abs(pos), data=long_data)
 #summary(full_model)
 
 #pdf("Ts_Tv_in_jaspar.pdf")
 #crPlot(full_model, "variable")
 #dev.off()
 
-ts_tv_model = lm(value ~ Tv + pos + name, data=long_data)
+ts_tv_model = lm(value ~ Tv + abs(pos) + name, data=long_data)
 summary(ts_tv_model)
 save.image("Jaspar_ts_tv.rdata")
 #crPlots(ts_tv_model)
