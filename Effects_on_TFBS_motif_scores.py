@@ -27,7 +27,7 @@ fixed_pfm_file.close()
 # 2)   pos  -- the relative position within the matrix. The value is from -1 to 1, where 0 is the center of the motif.
 # 3-8) NN   -- the change in pssm score associated with each possible mutation at that position in the motif.
 #
-print "name\tpos\tAG\tCT\tAC\tAT\tCG\tGT"
+print "name\tpos\tIC\tAG\tCT\tAC\tAT\tCG\tGT"
 with open("pfm_all.fixed.txt") as handle:
  for m in motifs.parse(handle, "jaspar"):
 
@@ -40,7 +40,7 @@ with open("pfm_all.fixed.txt") as handle:
 #
 # convert to pssm, adding a pseudocount of 0.1 to each base.
 #
-    pssm = m.counts.normalize(pseudocounts=0.1).log_odds()
+    pssm = m.counts.normalize(pseudocounts=1).log_odds()
     cons_score = pssm.calculate(cons)
     cons_list = list(cons)
     cons_str =  str(cons)
@@ -60,13 +60,13 @@ with open("pfm_all.fixed.txt") as handle:
       new_score_C = pssm.calculate(new_cons_str_C)
       new_score_G = pssm.calculate(new_cons_str_G)
       new_score_T = pssm.calculate(new_cons_str_T)
-      Ts_deltas = (abs(new_score_A-new_score_G), abs(new_score_C-new_score_T))
-      Tv_deltas = (abs(new_score_A-new_score_C), abs(new_score_A-new_score_T), 
-                   abs(new_score_C-new_score_G), abs(new_score_T-new_score_G))
       central_distance = 2 * (0.5 - float(i)/len(counts[1,:]))
 
-      print "%(name)s\t%(pos)f\t%(AG)f\t%(CT)f\t%(AC)f\t%(AT)f\t%(CG)f\t%(GT)f" % \
+      pssm_position_score = pssm['A',i] + pssm['C',i] + pssm['G',i] + pssm['T',i]
+
+      print "%(name)s\t%(pos)f\t%(IC)f\t%(AG)f\t%(CT)f\t%(AC)f\t%(AT)f\t%(CG)f\t%(GT)f" % \
             {'name': m.name, 'pos':  central_distance,  \
+             'IC': pssm_position_score, \
              'AG': abs(new_score_A-new_score_G),  \
              'CT': abs(new_score_C-new_score_T),  \
              'AC': abs(new_score_A-new_score_C),    \
