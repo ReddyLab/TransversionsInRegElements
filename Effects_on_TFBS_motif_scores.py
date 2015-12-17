@@ -27,7 +27,7 @@ fixed_pfm_file.close()
 # 2)   pos  -- the relative position within the matrix. The value is from -1 to 1, where 0 is the center of the motif.
 # 3-8) NN   -- the change in pssm score associated with each possible mutation at that position in the motif.
 #
-print "name\tpos\tIC\tAG\tCT\tAC\tAT\tCG\tGT"
+print "name\tpos\tIC\tDegCons\tAG\tCT\tAC\tAT\tCG\tGT"
 with open("pfm_all.fixed.txt") as handle:
  for m in motifs.parse(handle, "jaspar"):
 
@@ -36,6 +36,7 @@ with open("pfm_all.fixed.txt") as handle:
 #
     counts = m.counts
     cons = m.consensus
+    deg_cons = m.degenerate_consensus
 
 #
 # convert to pssm, adding a pseudocount of 0.1 to each base.
@@ -44,6 +45,7 @@ with open("pfm_all.fixed.txt") as handle:
     cons_score = pssm.calculate(cons)
     cons_list = list(cons)
     cons_str =  str(cons)
+    deg_cons_str = str(deg_cons)
 
 # 
 # for each position, generate a new test sequence for each possible nucleotide
@@ -64,9 +66,10 @@ with open("pfm_all.fixed.txt") as handle:
 
       pssm_position_score = pssm['A',i] + pssm['C',i] + pssm['G',i] + pssm['T',i]
 
-      print "%(name)s\t%(pos)f\t%(IC)f\t%(AG)f\t%(CT)f\t%(AC)f\t%(AT)f\t%(CG)f\t%(GT)f" % \
+      print "%(name)s\t%(pos)f\t%(IC)f\t%(DegCons)s\t%(AG)f\t%(CT)f\t%(AC)f\t%(AT)f\t%(CG)f\t%(GT)f" % \
             {'name': m.name, 'pos':  central_distance,  \
              'IC': pssm_position_score, \
+             'DegCons': deg_cons_str[i], \
              'AG': abs(new_score_A-new_score_G),  \
              'CT': abs(new_score_C-new_score_T),  \
              'AC': abs(new_score_A-new_score_C),    \
