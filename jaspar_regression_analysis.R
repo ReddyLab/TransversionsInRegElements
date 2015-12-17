@@ -61,8 +61,8 @@ dev.off()
 #
 # Main figure #2: The effect is also pronounced in most informative positions
 #
-
-long_data$IC_bin=as.factor(round_any(long_data$IC/min(long_data$IC), bin_size))
+IC_bin_size = 0.1
+long_data$IC_bin=as.factor(round_any(long_data$IC/min(long_data$IC), IC_bin_size))
 
 # regression within each bin
 regression_stats <- ddply(long_data, .(IC_bin), summarize, 
