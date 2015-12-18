@@ -49,13 +49,14 @@ theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.
 theme(axis.line = element_line(colour = "black"))
 
 # box plots
-pdf("Figure_1_A_Transversions_alter_TF_binding_more.pdf", width=10, height=3)
+pdf("Figure_1_A_Transversions_alter_TF_binding_more.pdf", width=14, height=3)
 ggplot(long_data, aes(x=bin, y=value, fill=mut_type)) + 
 geom_boxplot(notch=T) + 
 plot_theme + 
 scale_fill_manual(values = c("grey","white")) + 
 labs(x="Normalized distance from motif center", y="|difference in log-odds score|")+
-annotate("text", x = regression_stats[,1], y = 22, label=sprintf("%1.1g", regression_stats$pval))
+annotate("text", x = regression_stats[,1], y = 22, label=sprintf("%1.1g", regression_stats$pval))+
+annotate("text", x = regression_stats[,1], y = 24, label=sprintf("%0.2f (%0.2f)", regression_stats$estimate, regression_stats$std_error))
 dev.off()
 
 #
@@ -63,22 +64,30 @@ dev.off()
 #
 IC_bin_size = 0.1
 long_data$IC_bin=as.factor(round_any(long_data$IC/min(long_data$IC), IC_bin_size))
+long_data$IC_decile <- as.factor(with(long_data, cut(-1*IC, 
+                                                     breaks=quantile(-1*IC, probs=seq(0,1,by=0.05)),
+                                                     labels=seq(0.05,1,by=0.05), include.lowest=TRUE)))
+
 
 # regression within each bin
-regression_stats <- ddply(long_data, .(IC_bin), summarize, 
+IC_regression_stats <- ddply(long_data, .(IC_decile), summarize, 
       estimate  = summary(lm(value ~ mut_type))$coefficients[2,1], 
       std_error = summary(lm(value ~ mut_type))$coefficients[2,2],
       tstat     = summary(lm(value ~ mut_type))$coefficients[2,3], 
-      pval      = summary(lm(value ~ mut_type))$coefficients[2,4])
+      pval      = summary(lm(value ~ mut_type))$coefficients[2,4],
+      N         = NROW(residuals(lm(value ~ mut_type))))
 
-pdf("Figure_1_B_Transversions_alter_degenerate_sites_more.pdf", width=10, height=3)
-ggplot(long_data, aes(x=IC_bin, y=value, fill=mut_type)) + 
+pdf("Figure_1_B_Transversions_alter_degenerate_sites_more.pdf", width=14, height=3)
+ggplot(long_data, aes(x=IC_decile, y=value, fill=mut_type)) + 
 geom_boxplot(notch=T) + 
 plot_theme + 
 scale_fill_manual(values = c("grey","white")) + 
-labs(x="Normalized information content", y="|difference in log-odds score|") +
-annotate("text", x = regression_stats[,1], y = 22, label=sprintf("%1.1g", regression_stats$pval))
+labs(x="Quantile", y="|difference in log-odds score|") +
+annotate("text", x = IC_regression_stats[,1], y = 26, label=sprintf("%0.2f", IC_regression_stats$estimate), size=4)+
+annotate("text", x = IC_regression_stats[,1], y = 24, label=sprintf("(%0.2f)", IC_regression_stats$std_error), size=4)+
+annotate("text", x = IC_regression_stats[,1], y = 22, label=sprintf("%1.0e", IC_regression_stats$pval), size=4)
 dev.off()
+
 
 save.image("Jaspar_ts_tv.rdata")
 
